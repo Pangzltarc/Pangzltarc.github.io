@@ -1,0 +1,11 @@
+numpy
+scipy
+pandas
+scikit-learn
+plotly
+spicy
+matplotlib
+seaborn
+missingno
+geopandas
+sklearn
