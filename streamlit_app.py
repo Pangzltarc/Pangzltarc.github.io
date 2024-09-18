@@ -110,8 +110,9 @@ if uploaded_file is not None:
     st.write("Columns in the DataFrame:")
     st.write(df.columns)
 
-    # Ensure the columns you are trying to use exist in the DataFrame
-    columns = ['Country', 'Age Group', 'Marital Status', 'Population_Count']  # Ensure these are correct
+  # Update columns list based on the actual column names
+columns = ['Country', 'Age Group', 'Marital Status', 'Population_Count']  # Update this list if necessary
+if all(col in df.columns for col in columns):
     marriage_data = df[columns].dropna()
 
     # Pivot the data to create a matrix for clustering
@@ -196,5 +197,5 @@ if uploaded_file is not None:
     ax.set_xlabel("Silhouette coefficient values")
     ax.set_ylabel("Cluster label")
     st.pyplot(plt)
-
-
+else:
+    st.error("Some columns are missing from the DataFrame.")
