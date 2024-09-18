@@ -106,90 +106,95 @@ if uploaded_file is not None:
     # Geographical Visualization
     plot_geographical_clusters(marital_counts)
 
+    # Check actual columns in the DataFrame
+    st.write("Columns in the DataFrame:")
+    st.write(df.columns)
 
-    # Select relevant columns
-columns = ['Country', 'Age Group', 'Marital Status', 'Population_Count']  # Ensure these columns exist
-marriage_data = df[columns].dropna()
+    # Ensure the columns you are trying to use exist in the DataFrame
+    columns = ['Country', 'Age Group', 'Marital Status', 'Population_Count']  # Ensure these are correct
+    marriage_data = df[columns].dropna()
 
-# Pivot the data to create a matrix for clustering
-pivot_data = marriage_data.pivot_table(index='Country', columns='Age Group', values='Population_Count', fill_value=0)
+    # Pivot the data to create a matrix for clustering
+    pivot_data = marriage_data.pivot_table(index='Country', columns='Age Group', values='Population_Count', fill_value=0)
 
-# Standardize the data
-scaler = StandardScaler()
-scaled_data = scaler.fit_transform(pivot_data)
+    # Standardize the data
+    scaler = StandardScaler()
+    scaled_data = scaler.fit_transform(pivot_data)
 
-# Check scaled data shape
-print(scaled_data)
+    # Check scaled data shape
+    st.write("Scaled data shape:")
+    st.write(scaled_data.shape)
 
-# Use the Elbow method to find the optimal number of clusters
-sse = []
-k_range = range(1, 11)
+    # Use the Elbow method to find the optimal number of clusters
+    sse = []
+    k_range = range(1, 11)
 
-for k in k_range:
-    kmeans = KMeans(n_clusters=k, random_state=42)
+    for k in k_range:
+        kmeans = KMeans(n_clusters=k, random_state=42)
+        kmeans.fit(scaled_data)
+        sse.append(kmeans.inertia_)
+
+    # Plot the Elbow graph
+    plt.figure(figsize=(10,6))
+    plt.plot(k_range, sse, marker='o')
+    plt.title('Elbow Method for Optimal Number of Clusters')
+    plt.xlabel('Number of clusters (k)')
+    plt.ylabel('Sum of squared distances (Inertia)')
+    plt.grid(True)
+    st.pyplot(plt)
+
+    # Apply K-Means with the optimal number of clusters (e.g., k = 4)
+    optimal_k = 4  # Replace with the optimal k from the Elbow graph
+    kmeans = KMeans(n_clusters=optimal_k, random_state=42)
     kmeans.fit(scaled_data)
-    sse.append(kmeans.inertia_)
 
-# Plot the Elbow graph
-plt.figure(figsize=(10,6))
-plt.plot(k_range, sse, marker='o')
-plt.title('Elbow Method for Optimal Number of Clusters')
-plt.xlabel('Number of clusters (k)')
-plt.ylabel('Sum of squared distances (Inertia)')
-plt.grid(True)
-plt.show()
+    # Add cluster labels to the original data
+    pivot_data['Cluster'] = kmeans.labels_
+    st.write(pivot_data.head())
 
-# Apply K-Means with the optimal number of clusters (e.g., k = 4)
-optimal_k = 4  # Replace with the optimal k from the Elbow graph
-kmeans = KMeans(n_clusters=optimal_k, random_state=42)
-kmeans.fit(scaled_data)
-
-# Add cluster labels to the original data
-pivot_data['Cluster'] = kmeans.labels_
-print(pivot_data.head())
-
-# Calculate the Silhouette score
-silhouette_avg = silhouette_score(scaled_data, kmeans.labels_)
-print(f'Silhouette Score for {optimal_k} clusters: {silhouette_avg}')
+    # Calculate the Silhouette score
+    silhouette_avg = silhouette_score(scaled_data, kmeans.labels_)
+    st.write(f'Silhouette Score for {optimal_k} clusters: {silhouette_avg}')
 
     # Perform PCA for 2D visualization
-pca = PCA(n_components=2)
-pca_data = pca.fit_transform(scaled_data)
+    pca = PCA(n_components=2)
+    pca_data = pca.fit_transform(scaled_data)
 
-# Create a DataFrame for the PCA data
-pca_df = pd.DataFrame(data=pca_data, columns=['PC1', 'PC2'])
-pca_df['Cluster'] = kmeans.labels_
+    # Create a DataFrame for the PCA data
+    pca_df = pd.DataFrame(data=pca_data, columns=['PC1', 'PC2'])
+    pca_df['Cluster'] = kmeans.labels_
 
-# Plot the PCA result with clusters
-plt.figure(figsize=(10, 6))
-sns.scatterplot(x='PC1', y='PC2', hue='Cluster', data=pca_df, palette='Set1')
-plt.title('K-Mean Clusters Visualization using PCA')
-plt.xlabel('Principal Component 1')
-plt.ylabel('Principal Component 2')
-plt.grid(True)
-plt.show()
+    # Plot the PCA result with clusters
+    plt.figure(figsize=(10, 6))
+    sns.scatterplot(x='PC1', y='PC2', hue='Cluster', data=pca_df, palette='Set1')
+    plt.title('K-Mean Clusters Visualization using PCA')
+    plt.xlabel('Principal Component 1')
+    plt.ylabel('Principal Component 2')
+    plt.grid(True)
+    st.pyplot(plt)
 
-# Optional: Visualize Silhouette Score for each sample
-from sklearn.metrics import silhouette_samples
-import matplotlib.cm as cm
+    # Optional: Visualize Silhouette Score for each sample
+    from sklearn.metrics import silhouette_samples
+    import matplotlib.cm as cm
 
-# Compute the silhouette scores for each sample
-sample_silhouette_values = silhouette_samples(scaled_data, kmeans.labels_)
+    # Compute the silhouette scores for each sample
+    sample_silhouette_values = silhouette_samples(scaled_data, kmeans.labels_)
 
-fig, ax = plt.subplots(1, 1, figsize=(8, 6))
-y_lower = 10
-for i in range(optimal_k):
-    ith_cluster_silhouette_values = sample_silhouette_values[kmeans.labels_ == i]
-    ith_cluster_silhouette_values.sort()
-    size_cluster_i = ith_cluster_silhouette_values.shape[0]
-    y_upper = y_lower + size_cluster_i
-    color = cm.nipy_spectral(float(i) / optimal_k)
-    ax.fill_betweenx(np.arange(y_lower, y_upper), 0, ith_cluster_silhouette_values, facecolor=color, edgecolor=color, alpha=0.7)
-    ax.text(-0.05, y_lower + 0.5 * size_cluster_i, str(i))
-    y_lower = y_upper + 10
+    fig, ax = plt.subplots(1, 1, figsize=(8, 6))
+    y_lower = 10
+    for i in range(optimal_k):
+        ith_cluster_silhouette_values = sample_silhouette_values[kmeans.labels_ == i]
+        ith_cluster_silhouette_values.sort()
+        size_cluster_i = ith_cluster_silhouette_values.shape[0]
+        y_upper = y_lower + size_cluster_i
+        color = cm.nipy_spectral(float(i) / optimal_k)
+        ax.fill_betweenx(np.arange(y_lower, y_upper), 0, ith_cluster_silhouette_values, facecolor=color, edgecolor=color, alpha=0.7)
+        ax.text(-0.05, y_lower + 0.5 * size_cluster_i, str(i))
+        y_lower = y_upper + 10
 
-ax.set_title("Silhouette plot for K-Means clustering")
-ax.set_xlabel("Silhouette coefficient values")
-ax.set_ylabel("Cluster label")
-plt.show()
+    ax.set_title("Silhouette plot for K-Means clustering")
+    ax.set_xlabel("Silhouette coefficient values")
+    ax.set_ylabel("Cluster label")
+    st.pyplot(plt)
+
 
