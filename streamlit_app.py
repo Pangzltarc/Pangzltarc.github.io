@@ -15,6 +15,8 @@ from sklearn.decomposition import PCA
 import random
 from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import AgglomerativeClustering, SpectralClustering, DBSCAN
+from sklearn.mixture import GaussianMixture
 
 # Title of the Streamlit App
 st.title('Machine Learning Assignment-G6')
@@ -96,9 +98,6 @@ if uploaded_file is not None:
                         hover_name="Country", 
                         color_continuous_scale="Viridis")
     st.plotly_chart(fig)
-
-from sklearn.cluster import AgglomerativeClustering, SpectralClustering, DBSCAN
-from sklearn.mixture import GaussianMixture
 
 # Additional clustering methods
 
