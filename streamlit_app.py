@@ -25,3 +25,16 @@ if uploaded_file is not None:
     st.subheader("Missing Data Visualization")
     msno.matrix(df)
     st.pyplot(plt)
+
+    # Assuming 'X' contains the features you want to scale
+    X = df.select_dtypes(include=[np.number])  # Select numeric columns
+    
+    # Scaling the features
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    # Now you can use X_scaled for clustering or further analysis
+    # For example, you can add KMeans clustering
+    kmeans = KMeans(n_clusters=3)
+    kmeans.fit(X_scaled)
+    st.write("KMeans Clustering completed!")
