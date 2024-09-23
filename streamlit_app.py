@@ -35,5 +35,13 @@ clustering_method = st.selectbox(
 # Display the selected clustering method
 st.write(f"You selected: {clustering_method}")
 
+required_columns = ['Country', 'Marital Status']
+if not all(col in df.columns for col in required_columns):
+    st.error(f"Uploaded file must contain the following columns: {required_columns}")
+    st.stop()
+
+
+
+
 
 
