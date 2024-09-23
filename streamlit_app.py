@@ -1,20 +1,30 @@
 import streamlit as st
-import pandas as pd
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import missingno as msno
+from sklearn.cluster import KMeans, AgglomerativeClustering, SpectralClustering, DBSCAN
+from sklearn.decomposition import PCA
+from sklearn.mixture import GaussianMixture
+from sklearn.metrics import silhouette_score
+from sklearn.preprocessing import StandardScaler
+import plotly.express as px
 
-# Load your dataset
-# For example, df = pd.read_csv('your_data.csv')
+# Title of the Streamlit App
+st.title('Clustering Dashboard and Visualization')
 
-# Example DataFrame for demonstration
-data = {
-    'Country': ['Country A', 'Country B', 'Country C'],
-    'Age Group': ['15-19', '20-24', '25-29'],
-    'Count': [100, 200, 150]
-}
-df = pd.DataFrame(data)
+# File Uploader to load dataset
+uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"])
+if uploaded_file is not None:
+    df = pd.read_csv(uploaded_file)
+    st.write("Dataset loaded successfully!")
+    st.dataframe(df.head())
 
-# Streamlit app layout
-st.title("Clustering Selection for Marriage Patterns")
+    # Missing data visualization
+    st.subheader("Missing Data Visualization")
+    msno.matrix(df)
+    st.pyplot(plt)
 
 # Clustering method selection
 clustering_method = st.selectbox(
@@ -24,22 +34,6 @@ clustering_method = st.selectbox(
 
 # Display the selected clustering method
 st.write(f"You selected: {clustering_method}")
-
-# Input parameters based on the selected method (example for K-Means)
-if clustering_method == 'K-Means':
-    n_clusters = st.slider('Select number of clusters:', min_value=2, max_value=10, value=3)
-    st.write(f'Number of clusters: {n_clusters}')
-    # Add your clustering code here using n_clusters
-
-# Example output based on selected method (this should be replaced with actual clustering results)
-if st.button('Run Clustering'):
-    # Replace with your clustering logic
-    st.write("Running clustering...")
-    # Sample result
-    st.write(f"Results for {clustering_method} with {n_clusters if clustering_method == 'K-Means' else ''} clusters.")
-
-# Display the data for reference
-st.dataframe(df)
 
 
 
