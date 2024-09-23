@@ -16,6 +16,8 @@ st.title('Clustering Dashboard and Visualization')
 
 # File Uploader to load dataset
 uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"])
+df = None  # Initialize df to ensure it's defined outside the if statement
+
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     st.write("Dataset loaded successfully!")
@@ -26,19 +28,23 @@ if uploaded_file is not None:
     msno.matrix(df)
     st.pyplot(plt)
 
-# Clustering method selection
-clustering_method = st.selectbox(
-    'Select a clustering method:',
-    ('K-Means', 'Hierarchical Clustering', 'DBSCAN', 'GMM', 'Spectral Clustering')
-)
+    # Check for required columns
+    required_columns = ['Country', 'Marital Status']
+    if not all(col in df.columns for col in required_columns):
+        st.error(f"Uploaded file must contain the following columns: {required_columns}")
+        st.stop()
 
-# Display the selected clustering method
-st.write(f"You selected: {clustering_method}")
+    # Clustering method selection
+    clustering_method = st.selectbox(
+        'Select a clustering method:',
+        ('K-Means', 'Hierarchical Clustering', 'DBSCAN', 'GMM', 'Spectral Clustering')
+    )
 
-required_columns = ['Country', 'Marital Status']
-if not all(col in df.columns for col in required_columns):
-    st.error(f"Uploaded file must contain the following columns: {required_columns}")
-    st.stop()
+    # Display the selected clustering method
+    st.write(f"You selected: {clustering_method}")
+
+    # Continue with your clustering logic...
+
 
 
 
